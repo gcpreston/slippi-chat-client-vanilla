@@ -6,7 +6,13 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
+    <h1>Hello</h1>
+    <label for="player-code">Enter your player code:</label>
+    <input type="text" name="player-code" id="player-code-input">
+    <button id="enter-code">➜</button>
+    <p id="client-code"></p>
+    <p id="slippi-status">Not connected.</p>
+
+    <script src="./renderer.js"></script>
   </body>
 </html>

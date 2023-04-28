@@ -1,5 +1,11 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const { Ports, ConnectionStatus, ConnectionEvent } = require('@slippi/slippi-js');
+const { SlpLiveStream, SlpRealTime } = require('@vinceau/slp-realtime');
+
+const SLIPPI_ADDRESS = '127.0.0.1';
+const SLIPPI_PORT = Ports.DEFAULT;
+const CONNECTION_TYPE = 'dolphin';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -21,6 +27,24 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  /*
+  const livestream = new SlpLiveStream(CONNECTION_TYPE);
+  const realtime = new SlpRealTime();
+  realtime.setStream(this.livestream);
+
+  livestream.connection.on(ConnectionEvent.STATUS_CHANGE, (status) => {
+    if (status === ConnectionStatus.DISCONNECTED) {
+      mainWindow.webContents.send('slippi-disconnected');
+    }
+  });
+
+  livestream.start(SLIPPI_ADDRESS, SLIPPI_PORT)
+    .then(() => {
+      mainWindow.webContents.send('slippi-connected');
+    })
+    .catch(console.error);
+    */
 };
 
 // This method will be called when Electron has finished

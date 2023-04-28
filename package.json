@@ -18,6 +18,8 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@slippi/slippi-js": "^6.6.1",
+    "@vinceau/slp-realtime": "^3.3.0",
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
