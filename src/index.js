@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { Ports, ConnectionStatus, ConnectionEvent } = require('@slippi/slippi-js');
 const { SlpLiveStream, SlpRealTime } = require('@vinceau/slp-realtime');
@@ -28,10 +28,9 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
-  /*
   const livestream = new SlpLiveStream(CONNECTION_TYPE);
   const realtime = new SlpRealTime();
-  realtime.setStream(this.livestream);
+  realtime.setStream(livestream);
 
   livestream.connection.on(ConnectionEvent.STATUS_CHANGE, (status) => {
     if (status === ConnectionStatus.DISCONNECTED) {
@@ -39,12 +38,15 @@ const createWindow = () => {
     }
   });
 
-  livestream.start(SLIPPI_ADDRESS, SLIPPI_PORT)
+  ipcMain.on('slippi-connect', () => {
+    mainWindow.webContents.send('slippi-connecting');
+    livestream.start(SLIPPI_ADDRESS, SLIPPI_PORT)
     .then(() => {
+      console.log('slippi connected');
       mainWindow.webContents.send('slippi-connected');
     })
     .catch(console.error);
-    */
+  });
 };
 
 // This method will be called when Electron has finished

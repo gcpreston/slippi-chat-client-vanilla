@@ -2,16 +2,19 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
     <title>Hello World!</title>
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
     <h1>Hello</h1>
-    <label for="player-code">Enter your player code:</label>
-    <input type="text" name="player-code" id="player-code-input">
-    <button id="enter-code">➜</button>
+    <form id="player-code-form">
+      <label for="player-code">Enter your player code:</label>
+      <input type="text" name="player-code" id="player-code-input">
+      <button type="submit" id="enter-code">➜</button>
+    </form>
     <p id="client-code"></p>
-    <p id="slippi-status">Not connected.</p>
+    <p id="slippi-status">Initial text</p>
 
     <script src="./renderer.js"></script>
   </body>

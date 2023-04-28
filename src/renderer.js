@@ -1,25 +1,27 @@
 const button = document.getElementById('enter-code');
 const input = document.getElementById('player-code-input');
+const form = document.getElementById('player-code-form');
 const clientCode = document.getElementById('client-code');
 const slippiStatus = document.getElementById('slippi-status');
 
-button.addEventListener('click', () => {
-  // clientCode.innerHTML = input.value;
-  console.log('hello');
-  clientCode.innerHTML = 'wow';
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  clientCode.innerHTML = input.value;
 });
 
-// TOOD: Use preload to expose what is needed
-// https://stackoverflow.com/questions/44391448/electron-require-is-not-defined/57049268#57049268
-const { ipcRenderer } = require('electron');
+window.electronAPI.onSlippiConnecting((_event, value) => {
+  slippiStatus.innerHTML = 'Connecting...';
+  console.log('got connecting event');
+});
+  
+window.electronAPI.onSlippiConnected((_event, value) => {
+  slippiStatus.innerHTML = 'Slippi connected.';
+  console.log('connect!', value);
+});
 
-ipcRenderer.on('slippi-connected', () => {
-    console.log('slippi connected');
-    // slippiStatus.innerHTML = 'Slippi connected.';
-  });
-  
-  ipcRenderer.on('slippi-disconnected', () => {
-    console.log('slippi disconnect');
-    // slippiStatus.innerHTML = 'Slippi disconnected.';
-  });
-  
+window.electronAPI.onSlippiDisconnected((_event, value) => {
+  slippiStatus.innerHTML = 'Slippi disconnected.';
+  console.log('disconnect :(', value);
+});
+
+window.electronAPI.connectToSlippi();
