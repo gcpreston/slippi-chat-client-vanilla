@@ -47,6 +47,15 @@ const createWindow = () => {
     })
     .catch(console.error);
   });
+
+  realtime.game.start$.subscribe((payload) => {
+    const players = payload.players;
+    mainWindow.webContents.send('slippi-game-started', players);
+  });
+
+  realtime.game.end$.subscribe((_payload) => {
+    mainWindow.webContents.send('slippi-game-ended');
+  });
 };
 
 // This method will be called when Electron has finished

@@ -6,7 +6,10 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   connectToSlippi: () => ipcRenderer.send('slippi-connect'),
+
   onSlippiConnecting: (callback) => ipcRenderer.on('slippi-connecting', callback),
   onSlippiConnected: (callback) => ipcRenderer.on('slippi-connected', callback),
-  onSlippiDisconnected: (callback) => ipcRenderer.on('slippi-disconnected', callback)
+  onSlippiDisconnected: (callback) => ipcRenderer.on('slippi-disconnected', callback),
+  onSlippiGameStarted: (callback) => ipcRenderer.on('slippi-game-started', callback),
+  onSlippiGameEnded: (callback) => ipcRenderer.on('slippi-game-ended', callback)
 });
