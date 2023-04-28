@@ -3,6 +3,8 @@ const path = require('path');
 const { Ports, ConnectionStatus, ConnectionEvent } = require('@slippi/slippi-js');
 const { SlpLiveStream, SlpRealTime } = require('@vinceau/slp-realtime');
 
+const { UserData } = require('./data');
+
 const SLIPPI_ADDRESS = '127.0.0.1';
 const SLIPPI_PORT = Ports.DEFAULT;
 const CONNECTION_TYPE = 'dolphin';
@@ -19,6 +21,7 @@ const createWindow = () => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      sandbox: false
     },
   });
 
@@ -28,6 +31,7 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
+  // Initialize Slippi streams
   const livestream = new SlpLiveStream(CONNECTION_TYPE);
   const realtime = new SlpRealTime();
   realtime.setStream(livestream);
@@ -37,6 +41,20 @@ const createWindow = () => {
       mainWindow.webContents.send('slippi-disconnected');
     }
   });
+
+  // Slippi stream events
+  realtime.game.start$.subscribe((payload) => {
+    const players = payload.players;
+    mainWindow.webContents.send('slippi-game-started', players);
+  });
+
+  realtime.game.end$.subscribe((_payload) => {
+    mainWindow.webContents.send('slippi-game-ended');
+  });
+
+  // Renderer events
+  ipcMain.handle('get-client-code', () => UserData.readData('client-code'));
+  ipcMain.on('set-client-code', (_event, newCode) => UserData.writeData('client-code', newCode));
 
   ipcMain.on('slippi-connect', () => {
     mainWindow.webContents.send('slippi-connecting');
@@ -48,14 +66,9 @@ const createWindow = () => {
     .catch(console.error);
   });
 
-  realtime.game.start$.subscribe((payload) => {
-    const players = payload.players;
-    mainWindow.webContents.send('slippi-game-started', players);
-  });
-
-  realtime.game.end$.subscribe((_payload) => {
-    mainWindow.webContents.send('slippi-game-ended');
-  });
+  // Load user data
+  const clientCode = UserData.readData('client-code');
+  console.log('main process read client code', clientCode);
 };
 
 // This method will be called when Electron has finished

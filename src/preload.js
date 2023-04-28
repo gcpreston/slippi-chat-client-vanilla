@@ -11,5 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSlippiConnected: (callback) => ipcRenderer.on('slippi-connected', callback),
   onSlippiDisconnected: (callback) => ipcRenderer.on('slippi-disconnected', callback),
   onSlippiGameStarted: (callback) => ipcRenderer.on('slippi-game-started', callback),
-  onSlippiGameEnded: (callback) => ipcRenderer.on('slippi-game-ended', callback)
+  onSlippiGameEnded: (callback) => ipcRenderer.on('slippi-game-ended', callback),
+
+  getClientCode: async () => await ipcRenderer.invoke('get-client-code'),
+  setClientCode: (newCode) => ipcRenderer.send('set-client-code', newCode)  
 });

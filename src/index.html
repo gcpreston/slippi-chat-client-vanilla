@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-    <title>Hello World!</title>
+    <title>Slippi Chat</title>
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
@@ -13,8 +13,9 @@
       <input type="text" name="player-code" id="player-code-input">
       <button type="submit" id="enter-code">➜</button>
     </form>
-    <p id="client-code"></p>
-    <p id="slippi-status">Initial text</p>
+    <p>Player code: <span id="client-code"></span></p>
+    <button id="change-code">Change player code</button>
+    <p id="slippi-status"></p>
     <p id="game-status"></p>
 
     <script src="./renderer.js"></script>

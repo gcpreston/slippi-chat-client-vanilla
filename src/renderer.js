@@ -1,13 +1,23 @@
-const button = document.getElementById('enter-code');
-const input = document.getElementById('player-code-input');
-const form = document.getElementById('player-code-form');
+const playerCodeInput = document.getElementById('player-code-input');
+const playerCodeForm = document.getElementById('player-code-form');
 const clientCode = document.getElementById('client-code');
+const changeCodeButton = document.getElementById('change-code');
 const slippiStatus = document.getElementById('slippi-status');
 const gameStatus = document.getElementById('game-status');
 
-form.addEventListener('submit', (event) => {
+playerCodeForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  clientCode.innerHTML = input.value;
+
+  const newCode = playerCodeInput.value;
+  window.electronAPI.setClientCode(newCode);
+  clientCode.innerHTML = newCode;
+  playerCodeForm.style.visibility = 'hidden';
+  changeCodeButton.style.visibility = 'visible';
+});
+
+changeCodeButton.addEventListener('click', () => {
+  playerCodeForm.style.visibility = 'visible';
+  changeCodeButton.style.visibility = 'hidden';
 });
 
 const formatPlayer = (player) => `${player.displayName} (${player.connectCode})`
@@ -19,6 +29,20 @@ const formatPlayers = (players) => {
   }
 };
 
+async function initializeClientCode() {
+  const currentCode = await window.electronAPI.getClientCode();
+
+  if (currentCode) {
+    playerCodeForm.style.visibility = 'hidden';
+    changeCodeButton.style.visibility = 'visible';
+    clientCode.innerHTML = currentCode;
+  } else {
+    playerCodeForm.style.visibility = 'visible';
+    changeCodeButton.style.visibility = 'hidden';
+    clientCode.innerHTML = 'Not set';
+  }
+}
+
 window.electronAPI.onSlippiConnecting((_event, value) => {
   slippiStatus.innerHTML = 'Connecting...';
   gameStatus.innerHTML = 'No game';
@@ -27,7 +51,6 @@ window.electronAPI.onSlippiConnecting((_event, value) => {
   
 window.electronAPI.onSlippiConnected((_event, value) => {
   slippiStatus.innerHTML = 'Slippi connected.';
-
   console.log('connect!', value);
 });
 
@@ -44,4 +67,5 @@ window.electronAPI.onSlippiGameEnded(() => {
   gameStatus.innerHTML = 'No game';
 });
 
+initializeClientCode();
 window.electronAPI.connectToSlippi();
