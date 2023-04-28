@@ -1,7 +1,6 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-// https://stackoverflow.com/questions/44391448/electron-require-is-not-defined
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -10,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSlippiConnecting: (callback) => ipcRenderer.on('slippi-connecting', callback),
   onSlippiConnected: (callback) => ipcRenderer.on('slippi-connected', callback),
   onSlippiDisconnected: (callback) => ipcRenderer.on('slippi-disconnected', callback),
+  onSlippiConnectionFailed: (callback) => ipcRenderer.on('slippi-connection-failed', callback),
   onSlippiGameStarted: (callback) => ipcRenderer.on('slippi-game-started', callback),
   onSlippiGameEnded: (callback) => ipcRenderer.on('slippi-game-ended', callback),
 

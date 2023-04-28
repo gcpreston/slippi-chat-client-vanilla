@@ -60,10 +60,11 @@ const createWindow = () => {
     mainWindow.webContents.send('slippi-connecting');
     livestream.start(SLIPPI_ADDRESS, SLIPPI_PORT)
     .then(() => {
-      console.log('slippi connected');
       mainWindow.webContents.send('slippi-connected');
     })
-    .catch(console.error);
+    .catch(() => {
+      mainWindow.webContents.send('slippi-connection-failed');
+    });
   });
 
   // Load user data
