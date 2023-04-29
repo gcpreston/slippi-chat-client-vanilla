@@ -2,13 +2,20 @@ const playerCodeInput = document.getElementById('player-code-input');
 const playerCodeForm = document.getElementById('player-code-form');
 const clientCode = document.getElementById('client-code');
 const changeCodeButton = document.getElementById('change-code');
+const phoenixStatus = document.getElementById('phoenix-status');
+const retryPhoenixButton = document.getElementById('phoenix-retry');
 const slippiStatus = document.getElementById('slippi-status');
-const retryConnectionButton = document.getElementById('slippi-retry');
+const retrySlippiButton = document.getElementById('slippi-retry');
 const gameStatus = document.getElementById('game-status');
 
 function initializeSlippiConnection() {
   window.electronAPI.connectToSlippi();
-  retryConnectionButton.style.visibility = 'hidden';
+  retrySlippiButton.style.visibility = 'hidden';
+}
+
+function initializePhoenixConnection() {
+  window.electronAPI.connectToPhoenix();
+  retryPhoenixButton.style.visibility = 'hidden';
 }
 
 async function initializeClientCode() {
@@ -40,7 +47,7 @@ changeCodeButton.addEventListener('click', () => {
   changeCodeButton.style.visibility = 'hidden';
 });
 
-retryConnectionButton.addEventListener('click', () => {
+retrySlippiButton.addEventListener('click', () => {
   initializeSlippiConnection();
 })
 
@@ -53,6 +60,7 @@ const formatPlayers = (players) => {
   }
 };
 
+// Slippi connection events
 window.electronAPI.onSlippiConnecting(() => {
   slippiStatus.innerHTML = 'Connecting...';
   gameStatus.innerHTML = 'No game';
@@ -70,9 +78,10 @@ window.electronAPI.onSlippiDisconnected((_event, value) => {
 
 window.electronAPI.onSlippiConnectionFailed(() => {
   slippiStatus.innerHTML = 'Connection failed.';
-  retryConnectionButton.style.visibility = 'visible';
+  retrySlippiButton.style.visibility = 'visible';
 });
 
+// Slippi game events
 window.electronAPI.onSlippiGameStarted((_event, value) => {
   gameStatus.innerHTML = `Current game: ${formatPlayers(value)}`
 });
@@ -81,5 +90,20 @@ window.electronAPI.onSlippiGameEnded(() => {
   gameStatus.innerHTML = 'No game';
 });
 
+// Phoenix connection events
+window.electronAPI.onPhoenixConnecting(() => {
+  phoenixStatus.innerHTML = 'Phoenix connecting...';
+});
+  
+window.electronAPI.onPhoenixConnected(() => {
+  phoenixStatus.innerHTML = 'Phoenix connected.';
+});
+
+window.electronAPI.onPhoenixConnectionFailed(() => {
+  phoenixStatus.innerHTML = 'Phoenix connection failed.';
+  retryPhoenixButton.style.visibility = 'visible';
+});
+
 initializeClientCode();
 initializeSlippiConnection();
+initializePhoenixConnection();

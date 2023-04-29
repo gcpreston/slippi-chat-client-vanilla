@@ -13,6 +13,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSlippiGameStarted: (callback) => ipcRenderer.on('slippi-game-started', callback),
   onSlippiGameEnded: (callback) => ipcRenderer.on('slippi-game-ended', callback),
 
+  connectToPhoenix: () => ipcRenderer.send('phoenix-connect'),
+
+  onPhoenixConnecting: (callback) => ipcRenderer.on('phoenix-connecting', callback),
+  onPhoenixConnected: (callback) => ipcRenderer.on('phoenix-connected', callback),
+  onPhoenixConnectionFailed: (callback) => ipcRenderer.on('phoenix-connection-failed', callback),
+
   getClientCode: async () => await ipcRenderer.invoke('get-client-code'),
   setClientCode: (newCode) => ipcRenderer.send('set-client-code', newCode)  
 });

@@ -2,12 +2,15 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { Ports, ConnectionStatus, ConnectionEvent } = require('@slippi/slippi-js');
 const { SlpLiveStream, SlpRealTime } = require('@vinceau/slp-realtime');
+const { Socket } = require('phoenix-channels');
 
 const { UserData } = require('./data');
 
 const SLIPPI_ADDRESS = '127.0.0.1';
 const SLIPPI_PORT = Ports.DEFAULT;
 const CONNECTION_TYPE = 'dolphin';
+
+const SOCKET_URL = 'ws://192.168.0.37:4000/socket';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -36,6 +39,14 @@ const createWindow = () => {
   const realtime = new SlpRealTime();
   realtime.setStream(livestream);
 
+  // Load user data
+  const clientCode = UserData.readData('client-code');
+
+  // Initialize Phoenix channel
+  const topic = `players:${clientCode}`;
+  const socket = new Socket(SOCKET_URL);
+  const channel = socket.channel(topic, {});
+
   livestream.connection.on(ConnectionEvent.STATUS_CHANGE, (status) => {
     if (status === ConnectionStatus.DISCONNECTED) {
       mainWindow.webContents.send('slippi-disconnected');
@@ -56,20 +67,32 @@ const createWindow = () => {
   ipcMain.handle('get-client-code', () => UserData.readData('client-code'));
   ipcMain.on('set-client-code', (_event, newCode) => UserData.writeData('client-code', newCode));
 
+  // TODO: Avoid crashing via double connect on page refresh
+
   ipcMain.on('slippi-connect', () => {
     mainWindow.webContents.send('slippi-connecting');
     livestream.start(SLIPPI_ADDRESS, SLIPPI_PORT)
-    .then(() => {
-      mainWindow.webContents.send('slippi-connected');
-    })
-    .catch(() => {
-      mainWindow.webContents.send('slippi-connection-failed');
-    });
+      .then(() => {
+        mainWindow.webContents.send('slippi-connected');
+      })
+      .catch(() => {
+        mainWindow.webContents.send('slippi-connection-failed');
+      });
   });
 
-  // Load user data
-  const clientCode = UserData.readData('client-code');
-  console.log('main process read client code', clientCode);
+  ipcMain.on('phoenix-connect', () => {
+    mainWindow.webContents.send('phoenix-connecting');
+    socket.connect();
+    channel.join()
+      .receive('ok', (resp) => {
+        console.log('Joined successfully, reply:', resp);
+        mainWindow.webContents.send('phoenix-connected');
+      })
+      .receive('error', (resp) => { 
+        console.log('Unable to join:', resp);
+        mainWindow.webContents.send('phoenix-connection-failed');
+      });
+  });
 };
 
 // This method will be called when Electron has finished
