@@ -10,7 +10,7 @@ const SLIPPI_ADDRESS = '127.0.0.1';
 const SLIPPI_PORT = Ports.DEFAULT;
 const CONNECTION_TYPE = 'dolphin';
 
-const SOCKET_URL = 'ws://192.168.0.37:4000/socket';
+const SOCKET_URL = 'ws://127.0.0.1:4000/socket';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -39,14 +39,6 @@ const createWindow = () => {
   const realtime = new SlpRealTime();
   realtime.setStream(livestream);
 
-  // Load user data
-  const clientCode = UserData.readData('client-code');
-
-  // Initialize Phoenix channel
-  const topic = `players:${clientCode}`;
-  const socket = new Socket(SOCKET_URL);
-  const channel = socket.channel(topic, {});
-
   livestream.connection.on(ConnectionEvent.STATUS_CHANGE, (status) => {
     if (status === ConnectionStatus.DISCONNECTED) {
       mainWindow.webContents.send('slippi-disconnected');
@@ -67,6 +59,9 @@ const createWindow = () => {
   ipcMain.handle('get-client-code', () => UserData.readData('client-code'));
   ipcMain.on('set-client-code', (_event, newCode) => UserData.writeData('client-code', newCode));
 
+  ipcMain.handle('get-client-token', () => UserData.readData('client-token'));
+  ipcMain.on('set-client-token', (_event, newToken) => UserData.writeData('client-token', newToken));
+
   // TODO: Avoid crashing via double connect on page refresh
 
   ipcMain.on('slippi-connect', () => {
@@ -80,18 +75,32 @@ const createWindow = () => {
       });
   });
 
-  ipcMain.on('phoenix-connect', () => {
-    mainWindow.webContents.send('phoenix-connecting');
-    socket.connect();
-    channel.join()
-      .receive('ok', (resp) => {
-        console.log('Joined successfully, reply:', resp);
-        mainWindow.webContents.send('phoenix-connected');
-      })
-      .receive('error', (resp) => { 
-        console.log('Unable to join:', resp);
-        mainWindow.webContents.send('phoenix-connection-failed');
+  ipcMain.handle('phoenix-connect', () => {
+    const clientToken = UserData.readData('client-token');
+
+    if (clientToken) {
+      // Initialize Phoenix channel
+      const topic = 'clients';
+      const socket = new Socket(SOCKET_URL, { params: { client_token: clientToken } });
+      const channel = socket.channel(topic, {});
+
+      mainWindow.webContents.send('phoenix-connecting');
+      socket.connect();
+
+      return new Promise((resolve, reject) => {
+        channel.join()
+        .receive('ok', (resp) => {
+          console.log('Joined successfully, reply:', resp);
+          UserData.writeData('client-code', resp.connect_code);
+          resolve(resp);
+        })
+        .receive('error', (resp) => {
+          console.log('Unable to join:', resp);
+          mainWindow.webContents.send('phoenix-connection-failed');
+          reject(resp);
+        });
       });
+    }
   });
 };
 

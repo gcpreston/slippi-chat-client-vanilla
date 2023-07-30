@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <h1>Hello</h1>
-    <form id="player-code-form">
-      <label for="player-code">Enter your player code:</label>
-      <input type="text" name="player-code" id="player-code-input">
+    <h1>Slippi Chat</h1>
+    <form id="client-token-form">
+      <label for="client-token">Enter your token:</label>
+      <input type="password" name="client-token" id="client-token-input">
       <button type="submit" id="enter-code">➜</button>
     </form>
-    <p>Player code: <span id="client-code"></span></p>
-    <button id="change-code">Change player code</button>
+    <p>Player code: <span id="client-code">--</span></p>
+    <button id="change-token">Change token</button>
     <div>
       <span id="phoenix-status"></span>
       <button id="phoenix-retry">Retry Phoenix connection</button>

@@ -20,7 +20,7 @@ class UserData {
     contents[key] = value;
     fs.writeFileSync(filePath, JSON.stringify(contents));
   }
- 
+
   static readData(key) {
    let contents = parseData()
    return contents[key]

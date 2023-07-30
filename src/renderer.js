@@ -1,7 +1,7 @@
-const playerCodeInput = document.getElementById('player-code-input');
-const playerCodeForm = document.getElementById('player-code-form');
+const tokenInput = document.getElementById('client-token-input');
+const tokenForm = document.getElementById('client-token-form');
 const clientCode = document.getElementById('client-code');
-const changeCodeButton = document.getElementById('change-code');
+const changeTokenButton = document.getElementById('change-token');
 const phoenixStatus = document.getElementById('phoenix-status');
 const retryPhoenixButton = document.getElementById('phoenix-retry');
 const slippiStatus = document.getElementById('slippi-status');
@@ -14,37 +14,38 @@ function initializeSlippiConnection() {
 }
 
 function initializePhoenixConnection() {
-  window.electronAPI.connectToPhoenix();
+  phoenixStatus.innerHTML = 'Phoenix connecting...'
   retryPhoenixButton.style.visibility = 'hidden';
+
+  window.electronAPI.connectToPhoenix()
+    .then(
+      (resp) => {
+        console.log('connect', resp);
+        phoenixStatus.innerHTML = 'Phoenix connected.';
+        clientCode.innerHTML = resp.connect_code;
+        tokenForm.style.visibility = 'hidden';
+        changeTokenButton.style.visibility = 'visible';
+      },
+      (_error) => {
+        phoenixStatus.innerHTML = 'Phoenix connection failed.';
+        retryPhoenixButton.style.visibility = 'visible';
+      }
+    );
 }
 
-async function initializeClientCode() {
-  const currentCode = await window.electronAPI.getClientCode();
-
-  if (currentCode) {
-    playerCodeForm.style.visibility = 'hidden';
-    changeCodeButton.style.visibility = 'visible';
-    clientCode.innerHTML = currentCode;
-  } else {
-    playerCodeForm.style.visibility = 'visible';
-    changeCodeButton.style.visibility = 'hidden';
-    clientCode.innerHTML = 'Not set';
-  }
-}
-
-playerCodeForm.addEventListener('submit', (event) => {
+tokenForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const newCode = playerCodeInput.value;
-  window.electronAPI.setClientCode(newCode);
-  clientCode.innerHTML = newCode;
-  playerCodeForm.style.visibility = 'hidden';
-  changeCodeButton.style.visibility = 'visible';
+  const newToken = tokenInput.value;
+  window.electronAPI.setClientToken(newToken);
+  // clientCode.innerHTML = newCode;
+  tokenForm.style.visibility = 'hidden';
+  changeTokenButton.style.visibility = 'visible';
 });
 
-changeCodeButton.addEventListener('click', () => {
-  playerCodeForm.style.visibility = 'visible';
-  changeCodeButton.style.visibility = 'hidden';
+changeTokenButton.addEventListener('click', () => {
+  tokenForm.style.visibility = 'visible';
+  changeTokenButton.style.visibility = 'hidden';
 });
 
 retrySlippiButton.addEventListener('click', () => {
@@ -65,7 +66,7 @@ window.electronAPI.onSlippiConnecting(() => {
   slippiStatus.innerHTML = 'Connecting...';
   gameStatus.innerHTML = 'No game';
 });
-  
+
 window.electronAPI.onSlippiConnected((_event, value) => {
   slippiStatus.innerHTML = 'Slippi connected.';
   console.log('connect!', value);
@@ -90,20 +91,5 @@ window.electronAPI.onSlippiGameEnded(() => {
   gameStatus.innerHTML = 'No game';
 });
 
-// Phoenix connection events
-window.electronAPI.onPhoenixConnecting(() => {
-  phoenixStatus.innerHTML = 'Phoenix connecting...';
-});
-  
-window.electronAPI.onPhoenixConnected(() => {
-  phoenixStatus.innerHTML = 'Phoenix connected.';
-});
-
-window.electronAPI.onPhoenixConnectionFailed(() => {
-  phoenixStatus.innerHTML = 'Phoenix connection failed.';
-  retryPhoenixButton.style.visibility = 'visible';
-});
-
-initializeClientCode();
 initializeSlippiConnection();
 initializePhoenixConnection();
